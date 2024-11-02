@@ -12,11 +12,11 @@ shapesize(1.5)
 
 pensize(10)
 penup()
-dlinaSlova = 7
-dlinakwadr = 70
-otstup = 40
+dlinaSlova = 4
+dlinakwadr = 50
+otstup = 20
 X = - (dlinaSlova * dlinakwadr + (dlinaSlova - 1) * otstup) // 2
-Y = 0
+Y = -250
 
 for x in range(dlinaSlova):
     goto(X, Y)
@@ -27,5 +27,22 @@ for x in range(dlinaSlova):
     penup()
     X += dlinakwadr + otstup
 
+# линия 1
+penup()
+goto(-350,-175)
+pendown()
+goto(-30,-175)
+penup()
+
+# линия 2
+penup()
+goto(-50,-175)
+pendown()
+goto(-50,270)
+penup()
+
+#
+#
+#
 
 mainloop()
