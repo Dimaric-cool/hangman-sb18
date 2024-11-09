@@ -1,3 +1,4 @@
+from tkinter import Image
 from turtle import *
 
 WIDTH = 800
@@ -39,10 +40,13 @@ penup()
 goto(-50,-175)
 pendown()
 goto(-50,270)
+goto(-250,270)
+goto(-250,130)
+goto(-250,130)
 penup()
-
-#
-#
-#
+goto(-250,70)
+pendown()
+circle(30)
+goto(-250,-20)
 
 mainloop()
