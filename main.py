@@ -1,9 +1,11 @@
 import string
 import turtle
+from multiprocessing.connection import default_family
 from turtle import *
 
 WIDTH = 800
 HEIGHT = 700
+secret = "черепашка"
 
 Screen().setup(WIDTH, HEIGHT)
 
@@ -48,30 +50,39 @@ def draw_error(numError):
         case 10:
             draw_line(-220, 70, -310, 120)
 
-def draw_squares(dlinaSlova):
+def draw_squares(secretWord):
+    secretCoords = {}
     dlinakwadr = 50
     otstup = 20
-    X = - (dlinaSlova * dlinakwadr + (dlinaSlova - 1) * otstup) // 2
+    X = - (len(secretWord) * dlinakwadr + (len(secretWord) - 1) * otstup) // 2
     Y = -250
 
-    for x in range(dlinaSlova):
+    for letter in secretWord:
         goto(X, Y)
+        if letter not in secretCoords:
+            secretCoords[letter] = [(X + dlinakwadr // 2, Y - dlinakwadr)]
+        else:
+            secretCoords[letter].append((X + dlinakwadr // 2, Y - dlinakwadr))
         pendown()
         for _ in range(4):
             forward(dlinakwadr)
             right(90)
         penup()
         X += dlinakwadr + otstup
+    return secretCoords
 
+def draw_letter(letter, coords, penColor = "black"):
+    color(penColor)
+    goto(coords)
+    write(letter, False, "center", ("Comic Sans MS", fontSize, "bold"))
 
-def draw_alphabet(coords, fontSize):
+def draw_alphabet(coords):
     X, Y = coords
     alphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
     alphaCoords = {}
     for letter in alphabet:
         alphaCoords[letter] = (X, Y)
-        goto(X, Y)
-        write(letter, False, "center", ("Comic Sans MS", fontSize, "bold"))
+        draw_letter(letter, (X, Y))
         X += 60
         if X >= 350:
             X = 70
@@ -79,21 +90,34 @@ def draw_alphabet(coords, fontSize):
     return alphaCoords
 
 def get_coord(x, y):
-    click_check((x, y), alphaCoords)
+    click_check((x, y))
 
-def click_check(coord, dicti):
+def click_check(coord):
+    global alphaCoords
     d = fontSize // 2
-    for key, value in dicti.items():
+    for key, value in alphaCoords.items():
         if abs(coord[0] - value[0]) <= d and abs((coord[1]) - (value[1] + d)) <= d :
-            print(key)
+            draw_letter(key, value, "grey")
+            del alphaCoords[key]
+            letter_check(key)
+            return
 
-draw_squares(6)
+def letter_check(letter):
+    if letter in secretCoords:
+        for coord in secretCoords[letter]:
+            draw_letter(letter, coord, "green")
 
+# Отрисовка квадратов для загаданного слова
+secretCoords = draw_squares(secret)
+
+# Отрисовка виселицы
 for error in range(1, 11):
     draw_error(error)
 
-alphaCoords = draw_alphabet((70, 210), fontSize)
+# Отрисовка алфавита
+alphaCoords = draw_alphabet((70, 210))
 
-
+# Обработка кликов по алфавиту
 Screen().onclick(get_coord)
+
 mainloop()
