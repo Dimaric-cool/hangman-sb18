@@ -16,6 +16,8 @@ fontSize = 42
 pensize(10)
 penup()
 
+countErrors = 0
+
 
 
 def draw_line(x1, y1, x2, y2):
@@ -36,6 +38,7 @@ def draw_error(numError):
         case 4:
             draw_line(-220, 270, -220, 220)
         case 5:
+            goto(-220, 220)
             pendown()
             circle(-50)
             penup()
@@ -98,21 +101,27 @@ def click_check(coord):
     for key, value in alphaCoords.items():
         if abs(coord[0] - value[0]) <= d and abs((coord[1]) - (value[1] + d)) <= d :
             draw_letter(key, value, "grey")
+            color("black")
             del alphaCoords[key]
             letter_check(key)
             return
 
 def letter_check(letter):
+    global countErrors
     if letter in secretCoords:
         for coord in secretCoords[letter]:
             draw_letter(letter, coord, "green")
+    else:
+        countErrors += 1
+        draw_error(countErrors)
+
 
 # Отрисовка квадратов для загаданного слова
 secretCoords = draw_squares(secret)
 
-# Отрисовка виселицы
-for error in range(1, 11):
-    draw_error(error)
+# # Отрисовка виселицы
+# for error in range(1, 11):
+#     draw_error(error)
 
 # Отрисовка алфавита
 alphaCoords = draw_alphabet((70, 210))
