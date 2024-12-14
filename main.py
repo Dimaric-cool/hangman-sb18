@@ -1,24 +1,46 @@
-import string
-import turtle
-from multiprocessing.connection import default_family
 from turtle import *
+
+import words
 
 WIDTH = 800
 HEIGHT = 700
-secret = "черепашка"
+secret = ""
 
 Screen().setup(WIDTH, HEIGHT)
-
-shape("turtle")
-speed(0)
-shapesize(1.5)
-fontSize = 42
-pensize(10)
-penup()
 hideturtle()
 
+speed(0)
+
+fontSize = 42
+pensize(10)
+
 countErrors = 0
-countLetters = len(secret)
+countLetters = 0
+secretCoords = {}
+alphaCoords = {}
+buttonCoords = {}
+
+def startGame():
+    global secret
+    global countLetters
+    global countErrors
+    global secretCoords
+    global alphaCoords
+    global buttonCoords
+
+    clear()
+
+    secret = words.randomWord()
+    countLetters = len(secret)
+    countErrors = 0
+    penup()
+    color("black")
+    buttonCoords = {}
+    # Отрисовка квадратов для загаданного слова
+    secretCoords = draw_squares(secret)
+
+    # Отрисовка алфавита
+    alphaCoords = draw_alphabet((70, 210))
 
 
 def draw_line(x1, y1, x2, y2):
@@ -107,6 +129,15 @@ def click_check(coord):
             letter_check(key)
             return
 
+    if buttonCoords:
+        if abs(coord[0] - buttonCoords["ПОВТОРИТЬ"][0]) <= d*len("ПОВТОРИТЬ") and abs((coord[1]) - (buttonCoords["ПОВТОРИТЬ"][1] + d)) <= d:
+            startGame()
+            return
+        if abs(coord[0] - buttonCoords["ВЫЙТИ"][0]) <= d*len("ВЫЙТИ") and abs((coord[1]) - (buttonCoords["ВЫЙТИ"][1] + d)) <= d:
+            bye()
+            return
+
+
 def letter_check(letter):
     global countErrors
     global countLetters
@@ -126,6 +157,10 @@ def letter_check(letter):
 
 def end_game(win=True):
     global alphaCoords
+    global buttonCoords
+
+    buttonCoords = {"ПОВТОРИТЬ": (-200, -250), "ВЫЙТИ": (200, -250)}
+
     alphaCoords.clear()
     clear()
     fontColor = "green"
@@ -144,13 +179,17 @@ def end_game(win=True):
     goto(0, -50)
     color(fontColor)
     write(secret, False, "center", ("Comic Sans MS", 60, "bold"))
+    goto(buttonCoords["ПОВТОРИТЬ"])
+    color("green")
+    write("ПОВТОРИТЬ", False, "center", ("Comic Sans MS", 42, "bold"))
+    goto(buttonCoords["ВЫЙТИ"])
+    color("red")
+    write("ВЫЙТИ", False, "center", ("Comic Sans MS", 42, "bold"))
 
 
-# Отрисовка квадратов для загаданного слова
-secretCoords = draw_squares(secret)
 
-# Отрисовка алфавита
-alphaCoords = draw_alphabet((70, 210))
+
+startGame()
 
 # Обработка кликов по алфавиту
 Screen().onclick(get_coord)
