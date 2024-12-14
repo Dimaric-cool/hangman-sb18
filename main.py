@@ -15,9 +15,10 @@ shapesize(1.5)
 fontSize = 42
 pensize(10)
 penup()
+hideturtle()
 
 countErrors = 0
-
+countLetters = len(secret)
 
 
 def draw_line(x1, y1, x2, y2):
@@ -108,20 +109,45 @@ def click_check(coord):
 
 def letter_check(letter):
     global countErrors
+    global countLetters
     if letter in secretCoords:
         for coord in secretCoords[letter]:
             draw_letter(letter, coord, "green")
+            countLetters -= 1
+            # если отгадали все буквы - победа
+            if countLetters <= 0:
+                end_game()
     else:
         countErrors += 1
         draw_error(countErrors)
+        # если набрали 10 ошибок - поражение
+        if countErrors >= 10:
+            end_game(False)
+
+def end_game(win=True):
+    global alphaCoords
+    alphaCoords.clear()
+    clear()
+    fontColor = "green"
+    status = "победили"
+
+    if not win:
+        fontColor = "red"
+        status = "проиграли"
+
+    goto(0, 210)
+    color(fontColor)
+    write(f"Вы {status}", False, "center", ("Comic Sans MS", 72, "bold"))
+    goto(0, 40)
+    color("black")
+    write("загаданное слово:", False, "center", ("Comic Sans MS", 40, "bold"))
+    goto(0, -50)
+    color(fontColor)
+    write(secret, False, "center", ("Comic Sans MS", 60, "bold"))
 
 
 # Отрисовка квадратов для загаданного слова
 secretCoords = draw_squares(secret)
-
-# # Отрисовка виселицы
-# for error in range(1, 11):
-#     draw_error(error)
 
 # Отрисовка алфавита
 alphaCoords = draw_alphabet((70, 210))
