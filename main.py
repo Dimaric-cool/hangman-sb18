@@ -1,97 +1,132 @@
-import random
+import string
 import turtle
+from multiprocessing.connection import default_family
+from turtle import *
 
-# Список слов
-words = ["попугай", "телефон", "праграма", "лень", "частота", "вавля"]
+WIDTH = 800
+HEIGHT = 700
+secret = "черепашка"
 
-# Случайный выбор слова
-secret_word = random.choice(words)
-guessed_letters = []  # Угаданные буквы
-mistakes = 0  # Количество ошибок
-max_mistakes = 6  # Максимум ошибок
+Screen().setup(WIDTH, HEIGHT)
 
-# Настройка экрана
-screen = turtle.Screen()
-screen.title("Игра Виселица")
-screen.setup(width=600, height=600)
+shape("turtle")
+speed(0)
+shapesize(1.5)
+fontSize = 42
+pensize(10)
+penup()
 
-# Создание холста для рисования
-pen = turtle.Turtle()
-pen.speed(0)
-pen.hideturtle()
-# Функция для рисования виселицы и частей тела
+countErrors = 0
 
 
 
-def draw_hangman(mistakes):
-    if mistakes == 1:  # Основание
-        pen.penup()
-        pen.goto(-100, -200)
-        pen.pendown()
-        pen.forward(200)
-    elif mistakes == 2:  # Столб
-        pen.penup()
-        pen.goto(-50, -200)
-        pen.pendown()
-        pen.goto(-50, 100)
-    elif mistakes == 3:  # Перекладина
-        pen.goto(50, 100)
-    elif mistakes == 4:  # Веревка
-        pen.goto(50, 50)
-    elif mistakes == 5:  # Голова
-        pen.penup()
-        pen.goto(50, 25)
-        pen.pendown()
-        pen.circle(25)
-    elif mistakes == 6:  # Тело
-        pen.penup()
-        pen.goto(50, 25)
-        pen.pendown()
-        pen.goto(50, -50)
-    elif mistakes == 7:  # Рука левая
-        pen.goto(30, 0)
-    elif mistakes == 8:  # Рука правая
-        pen.penup()
-        pen.goto(50, -25)
-        pen.pendown()
-        pen.goto(70, 0)
-    elif mistakes == 9:  # Нога левая
-        pen.penup()
-        pen.goto(50, -50)
-        pen.pendown()
-        pen.goto(30, -100)
-    elif mistakes == 10:  # Нога правая
-        pen.penup()
-        pen.goto(50, -50)
-        pen.pendown()
-        pen.goto(70, -100)
+def draw_line(x1, y1, x2, y2):
+    penup()
+    goto(x1, y1)
+    pendown()
+    goto(x2, y2)
+    penup()
 
-        # Функция для отображения текущего состояния слова
-        def display_word():
-            pen.penup()
-            pen.goto(-200, 200)
-            pen.pendown()
-            display = ""
-            for letter in secret_word:
-                if letter in guessed_letters:
-                    display += letter + " "
-                else:
-                    display += "_ "
-            pen.clear()
-            pen.write(display, font=("Arial", 24, "normal"))
+def draw_error(numError):
+    match numError:
+        case 1:
+            draw_line(-350, -175, -30, -175)
+        case 2:
+            draw_line(-50, -175, -50, 270)
+        case 3:
+            draw_line(-50, 270, -220, 270)
+        case 4:
+            draw_line(-220, 270, -220, 220)
+        case 5:
+            goto(-220, 220)
+            pendown()
+            circle(-50)
+            penup()
+        case 6:
+            draw_line(-220, 120, -220, -30)
+        case 7:
+            draw_line(-220, -30, -130, -130)
+        case 8:
+            draw_line(-220, -30, -310, -130)
+        case 9:
+            draw_line(-220, 70, -130, 120)
+        case 10:
+            draw_line(-220, 70, -310, 120)
 
-            # Обработка нажатий клавиш
-            def key_press(key):
-                if key.isalpha() and len(key) == 1:
-                    check_letter(key.lower())
+def draw_squares(secretWord):
+    secretCoords = {}
+    dlinakwadr = 50
+    otstup = 20
+    X = - (len(secretWord) * dlinakwadr + (len(secretWord) - 1) * otstup) // 2
+    Y = -250
 
-            # Установка обработчика событий для клавиатуры
-            screen.listen()
-            for letter in "абвгдежзийклмнопрстуфхцчшщъыьэюя":
-                screen.onkey(lambda l=letter: key_press(l), letter)
+    for letter in secretWord:
+        goto(X, Y)
+        if letter not in secretCoords:
+            secretCoords[letter] = [(X + dlinakwadr // 2, Y - dlinakwadr)]
+        else:
+            secretCoords[letter].append((X + dlinakwadr // 2, Y - dlinakwadr))
+        pendown()
+        for _ in range(4):
+            forward(dlinakwadr)
+            right(90)
+        penup()
+        X += dlinakwadr + otstup
+    return secretCoords
 
-            # Отображение начального состояния
-            display_word()
+def draw_letter(letter, coords, penColor = "black"):
+    color(penColor)
+    goto(coords)
+    write(letter, False, "center", ("Comic Sans MS", fontSize, "bold"))
 
-            # Запуск игрового цикла
-            screen.mainloop()
+def draw_alphabet(coords):
+    X, Y = coords
+    alphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+    alphaCoords = {}
+    for letter in alphabet:
+        alphaCoords[letter] = (X, Y)
+        draw_letter(letter, (X, Y))
+        X += 60
+        if X >= 350:
+            X = 70
+            Y -= 65
+    return alphaCoords
+
+def get_coord(x, y):
+    click_check((x, y))
+
+def click_check(coord):
+    global alphaCoords
+    d = fontSize // 2
+    for key, value in alphaCoords.items():
+        if abs(coord[0] - value[0]) <= d and abs((coord[1]) - (value[1] + d)) <= d :
+            draw_letter(key, value, "grey")
+            color("black")
+            del alphaCoords[key]
+            letter_check(key)
+            return
+
+def letter_check(letter):
+    global countErrors
+    if letter in secretCoords:
+        for coord in secretCoords[letter]:
+            draw_letter(letter, coord, "green")
+    else:
+        countErrors += 1
+        draw_error(countErrors)
+
+
+# Отрисовка квадратов для загаданного слова
+secretCoords = draw_squares(secret)
+
+# # Отрисовка виселицы
+# for error in range(1, 11):
+#     draw_error(error)
+
+# Отрисовка алфавита
+alphaCoords = draw_alphabet((70, 210))
+
+# Обработка кликов по алфавиту
+Screen().onclick(get_coord)
+
+mainloop()
