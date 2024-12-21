@@ -6,6 +6,8 @@ WIDTH = 800
 HEIGHT = 700
 secret = ""
 
+Screen()._root.iconbitmap("logo.ico")
+title("Hangman GAME")
 Screen().setup(WIDTH, HEIGHT)
 hideturtle()
 
